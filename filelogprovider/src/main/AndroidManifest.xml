@@ -1,0 +1,10 @@
+<manifest package="com.ageet.filelogprovider"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider
+                android:name="com.ageet.filelogprovider.FileLogProvider"
+                android:process=":log"
+                android:authorities="${applicationId}.provider.file_log"
+                android:exported="false" />
+    </application>
+</manifest>
