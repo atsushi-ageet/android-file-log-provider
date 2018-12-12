@@ -246,6 +246,7 @@ open class FileLogProvider : ContentProvider() {
             try {
                 contentProviderClient?.bulkInsert(contentUri, logs.toTypedArray())
             } catch (e: TransactionTooLargeException) {
+                Log.w(LOG_TAG, "TransactionTooLargeException ${logs.size}")
                 if (logs.size <= 1) {
                     Log.e(LOG_TAG, "Could not write log because transaction too large")
                     return
