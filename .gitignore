@@ -16,3 +16,8 @@ local.properties
 /.idea/misc.xml
 /.idea/runConfigurations.xml
 /.idea/caches/
+
+# VS Code
+.classpath
+.project
+bin/
