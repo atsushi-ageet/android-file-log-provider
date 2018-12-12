@@ -83,7 +83,7 @@ open class FileLogProvider : ContentProvider() {
                 val priority = values.getAsInteger(Column.PRIORITY)
                 logWriter.priority = priority
                 sharedPreferences.edit().putInt(Column.PRIORITY, priority).apply()
-                context.contentResolver.notifyChange(getContentUri(context), null)
+                context.contentResolver.notifyChange(Path.PRIORITY.getContentUri(context), null)
             }
         }
         return 1
@@ -166,7 +166,7 @@ open class FileLogProvider : ContentProvider() {
         fun initialize(context: Context) {
             if (!isInitialized) {
                 isInitialized = true
-                context.contentResolver.registerContentObserver(getContentUri(context), false, object : ContentObserver(Handler(Looper.getMainLooper())) {
+                context.contentResolver.registerContentObserver(Path.PRIORITY.getContentUri(context), false, object : ContentObserver(Handler(Looper.getMainLooper())) {
                     override fun onChange(selfChange: Boolean) {
                         priority = loadPriority(context)
                     }
