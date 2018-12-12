@@ -18,7 +18,9 @@ open class FileLogProvider : ContentProvider() {
     private val sharedPreferences: SharedPreferences get() = context.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
     private lateinit var logWriter: LogWriter
     private lateinit var rollingFile: LogStrategy.RollingFile
-    open val logFormatter: LogFormatter get() = LogFormatter.Default(context)
+    private val logFormatter: LogFormatter by lazy { createLogFormatter() }
+
+    open fun createLogFormatter(): LogFormatter = LogFormatter.Default(context)
 
     override fun onCreate(): Boolean {
         val metaData = getMetaData(context)
