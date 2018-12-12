@@ -265,11 +265,11 @@ open class FileLogProvider : ContentProvider() {
         }
 
         fun loadFiles(context: Context): List<File> {
-            return context.contentResolver.query(Path.FILES.getContentUri(context), null, null, null, null).use { cursor ->
+            return context.contentResolver.query(Path.FILES.getContentUri(context), null, null, null, null)?.use { cursor ->
                 generateSequence { cursor.takeIf { it.moveToNext() } }
                         .map { File(it.getString(cursor.getColumnIndex(Column.FILE))) }
                         .toList()
-            }
+            } ?: emptyList()
         }
 
         private var priority: Int = -1
@@ -295,10 +295,10 @@ open class FileLogProvider : ContentProvider() {
         }
 
         private fun loadPriority(context: Context): Int {
-            return context.contentResolver.query(Path.PRIORITY.getContentUri(context), null, null, null, null).use { cursor ->
+            return context.contentResolver.query(Path.PRIORITY.getContentUri(context), null, null, null, null)?.use { cursor ->
                 cursor.moveToFirst()
                 cursor.getInt(cursor.getColumnIndex(Column.PRIORITY))
-            }
+            } ?: LogWriter.PRIORITY_NONE
         }
 
         private fun savePriority(context: Context, priority: Int) {
