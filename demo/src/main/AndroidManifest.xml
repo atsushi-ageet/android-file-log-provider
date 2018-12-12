@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.ageet.filelogprovider.demo">
 
     <application
@@ -22,6 +23,10 @@
 
         <provider
             android:name="com.ageet.filelogprovider.FileLogProvider"
+            android:authorities="${applicationId}.provider.file_log"
+            tools:node="remove" />
+        <provider
+            android:name="com.ageet.filelogprovider.demo.CustomFileLogProvider"
             android:authorities="${applicationId}.provider.file_log">
             <meta-data android:name="initialPriority"
                 android:value="2" />
