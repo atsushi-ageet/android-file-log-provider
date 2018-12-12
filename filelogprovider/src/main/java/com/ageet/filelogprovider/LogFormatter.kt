@@ -58,7 +58,7 @@ interface LogFormatter {
         }
 
         companion object {
-            private val DATE_FORMAT = SimpleDateFormat("MM-dd kk:mm:ss.SSS", Locale.US)
+            private val DATE_FORMAT = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
         }
     }
 }
