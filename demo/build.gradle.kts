@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ageet.filelogprovider.demo"
-        minSdkVersion(14)
+        minSdkVersion(16)
         targetSdkVersion(28)
         versionCode = 1
         versionName = "1.0"
