@@ -29,12 +29,6 @@ open class FileLogProvider : ContentProvider() {
         val maxLogFileBackup = metaData.getInt(MetaData.MAX_LOG_FILE_BACKUP, LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_BACKUP)
         val logFileBaseName = metaData.getString(MetaData.LOG_FILE_BASE_NAME, LogStrategy.RollingFile.DEFAULT_LOG_FILE_BASE_NAME)
         val logFileExt = metaData.getString(MetaData.LOG_FILE_EXT, LogStrategy.RollingFile.DEFAULT_LOG_FILE_EXT)
-        Log.i(LOG_TAG, "processName = ${getProviderInfo(context).processName}, "
-                    + "initialPriority = $initialPriority, "
-                    + "maxLogFileSize = $maxLogFileSize, "
-                    + "maxLogFileBackup = $maxLogFileBackup, "
-                    + "logFileBaseName = $logFileBaseName, "
-                    + "logFileExt = $logFileExt")
         rollingFile = LogStrategy.RollingFile(
                 context = context,
                 formatter = logFormatter,
@@ -45,6 +39,16 @@ open class FileLogProvider : ContentProvider() {
         logWriter = LogWriter(rollingFile)
         logWriter.installCrashHandler(context)
         logWriter.priority = sharedPreferences.getInt(Column.PRIORITY, initialPriority)
+        Log.i(LOG_TAG,  "Initialize file log provider("
+                    + "processName = ${getProviderInfo(context).processName}, "
+                    + "initialPriority = $initialPriority, "
+                    + "currentPriority = ${logWriter.priority}, "
+                    + "maxLogFileSize = $maxLogFileSize, "
+                    + "maxLogFileBackup = $maxLogFileBackup, "
+                    + "logFileBaseName = $logFileBaseName, "
+                    + "logFileExt = $logFileExt"
+                    + ")"
+        )
         return true
     }
 
@@ -81,6 +85,7 @@ open class FileLogProvider : ContentProvider() {
         when (matcher.match(uri)) {
             Path.PRIORITY.code -> {
                 val priority = values.getAsInteger(Column.PRIORITY)
+                Log.i(LOG_TAG, "Update priority to $priority")
                 logWriter.priority = priority
                 sharedPreferences.edit().putInt(Column.PRIORITY, priority).apply()
                 context.contentResolver.notifyChange(Path.PRIORITY.getContentUri(context), null)
