@@ -22,11 +22,22 @@ open class FileLogProvider : ContentProvider() {
 
     open fun createLogFormatter(): LogFormatter = LogFormatter.Default(context)
 
+    private fun getInternalFilesDir(path: String) = File(context.filesDir, path).also { file ->
+        if (!file.exists()) file.mkdirs()
+    }
+
+    private fun getLogFileDirPath(path: String): File = when {
+        path.startsWith(PREFIX_EXTERNAL_FILES) -> requireNotNull(context.getExternalFilesDir(path.removePrefix(PREFIX_EXTERNAL_FILES)))
+        path.isNotBlank() -> getInternalFilesDir(path)
+        else -> LogStrategy.RollingFile.getDefaultLogDir(context)
+    }
+
     override fun onCreate(): Boolean {
         val metaData = getMetaData(context)
         val initialPriority = metaData.getInt(MetaData.INITIAL_PRIORITY, LogWriter.PRIORITY_NONE)
         val maxLogFileSize = metaData[MetaData.MAX_LOG_FILE_SIZE_IN_MB]?.let { it as? Float }?.let { it * 1024 * 1024 }?.toLong() ?: LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_SIZE
         val maxLogFileBackup = metaData.getInt(MetaData.MAX_LOG_FILE_BACKUP, LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_BACKUP)
+        val logFileDir = getLogFileDirPath(metaData.getString(MetaData.LOG_FILE_DIR, ""))
         val logFileBaseName = metaData.getString(MetaData.LOG_FILE_BASE_NAME, LogStrategy.RollingFile.DEFAULT_LOG_FILE_BASE_NAME)
         val logFileExt = metaData.getString(MetaData.LOG_FILE_EXT, LogStrategy.RollingFile.DEFAULT_LOG_FILE_EXT)
         rollingFile = LogStrategy.RollingFile(
@@ -34,6 +45,7 @@ open class FileLogProvider : ContentProvider() {
                 formatter = logFormatter,
                 maxLogFileSize = maxLogFileSize,
                 maxLogFileBackup = maxLogFileBackup,
+                logFileDir = logFileDir,
                 logFileBaseName = logFileBaseName,
                 logFileExt = logFileExt)
         logWriter = LogWriter(rollingFile)
@@ -146,6 +158,7 @@ open class FileLogProvider : ContentProvider() {
         const val INITIAL_PRIORITY: String = "initialPriority"
         const val MAX_LOG_FILE_SIZE_IN_MB: String = "RollingFile.maxLogFileSizeInMb"
         const val MAX_LOG_FILE_BACKUP: String = "RollingFile.maxLogFileBackup"
+        const val LOG_FILE_DIR: String = "RollingFile.logFileDir"
         const val LOG_FILE_BASE_NAME: String = "RollingFile.logFileBaseName"
         const val LOG_FILE_EXT: String = "RollingFile.logFileExt"
     }
@@ -154,6 +167,7 @@ open class FileLogProvider : ContentProvider() {
         private const val LOG_TAG: String = "FileLogProvider"
 
         private const val MAX_LOG_MESSAGE_LENGTH: Int = 20000
+        private const val PREFIX_EXTERNAL_FILES: String = "{external-path}"
         private val executor: Executor = Executors.newSingleThreadExecutor()
         private var contentProviderClient: ContentProviderClient? = null
         private var contentUri: Uri = Uri.EMPTY

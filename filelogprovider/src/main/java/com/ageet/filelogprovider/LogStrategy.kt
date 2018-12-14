@@ -127,7 +127,7 @@ abstract class LogStrategy(val formatter: LogFormatter) {
             internal const val DEFAULT_LOG_FILE_BASE_NAME = "application"
             internal const val DEFAULT_LOG_FILE_EXT = "log"
 
-            private fun getDefaultLogDir(context: Context) = context.getExternalFilesDir(DEFAULT_LOG_FILE_DIR_NAME)
+            internal fun getDefaultLogDir(context: Context) = context.getExternalFilesDir(DEFAULT_LOG_FILE_DIR_NAME)
         }
     }
 }

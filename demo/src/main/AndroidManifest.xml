@@ -28,16 +28,12 @@
         <provider
             android:name="com.ageet.filelogprovider.demo.CustomFileLogProvider"
             android:authorities="${applicationId}.provider.file_log">
-            <meta-data android:name="initialPriority"
-                android:value="2" />
-            <meta-data android:name="RollingFile.maxLogFileSizeInMb"
-                android:value="0.3" />
-            <meta-data android:name="RollingFile.maxLogFileBackup"
-                android:value="6" />
-            <meta-data android:name="RollingFile.logFileBaseName"
-                android:value="log" />
-            <meta-data android:name="RollingFile.logFileExt"
-                android:value="txt" />
+            <meta-data android:name="initialPriority" android:value="2" />
+            <meta-data android:name="RollingFile.maxLogFileSizeInMb" android:value="0.3" />
+            <meta-data android:name="RollingFile.maxLogFileBackup" android:value="6" />
+            <meta-data android:name="RollingFile.logFileDir" android:value="logs" />
+            <meta-data android:name="RollingFile.logFileBaseName" android:value="log" />
+            <meta-data android:name="RollingFile.logFileExt" android:value="txt" />
         </provider>
     </application>
 
