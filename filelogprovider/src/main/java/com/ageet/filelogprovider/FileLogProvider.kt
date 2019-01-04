@@ -120,7 +120,7 @@ open class FileLogProvider : ContentProvider() {
                 val files = rollingFile.logFileList
                 MatrixCursor(arrayOf(Column.FILE), files.size).also { cursor ->
                     files.forEach {
-                        cursor.addRow(arrayOf(it))
+                        cursor.addRow(arrayOf(it.absolutePath))
                     }
                 }
             }

@@ -23,9 +23,10 @@ abstract class LogStrategy(val formatter: LogFormatter) {
                       internal val logFileExt: String = DEFAULT_LOG_FILE_EXT) : LogStrategy(formatter) {
 
         private val logFile: File by lazy { getIndexedLogFile(0) }
-        val logFileList: List<String> get() = logFileDir.list { _, fileName ->
+        private val logFileNameList: List<String> get() = logFileDir.list { _, fileName ->
             fileName.matches("$logFileBaseName(_\\d+)?\\.$logFileExt".toRegex())
         }.toList()
+        val logFileList: List<File> get() = logFileNameList.map { File(logFileDir, it) }
 
         override fun printLog(header: String, formattedLog: String) {
             rotateIfNeeded()
@@ -103,7 +104,7 @@ abstract class LogStrategy(val formatter: LogFormatter) {
         }
 
         private fun deleteUnnecessaryFiles() {
-            logFileList.mapNotNull { it.removePrefix("${logFileBaseName}_").removeSuffix(".$logFileExt").toIntOrNull() }
+            logFileNameList.mapNotNull { it.removePrefix("${logFileBaseName}_").removeSuffix(".$logFileExt").toIntOrNull() }
                     .filter { it > maxLogFileBackup }
                     .map { getIndexedLogFile(it) }
                     .forEach { unnecessaryFile ->
