@@ -166,6 +166,7 @@ open class FileLogProvider : ContentProvider() {
     companion object {
         private const val LOG_TAG: String = "FileLogProvider"
 
+        private const val MAX_LOG_ITEM_SIZE_FOR_TRANSACTION: Int = 1000
         private const val MAX_LOG_MESSAGE_LENGTH: Int = 20000
         private const val PREFIX_EXTERNAL_FILES: String = "{external-path}"
         private val executor: Executor = Executors.newSingleThreadExecutor()
@@ -218,7 +219,9 @@ open class FileLogProvider : ContentProvider() {
                 if (logs.isEmpty()) {
                     return@execute
                 }
-                sendLog(context, logs)
+                logs.chunked(MAX_LOG_ITEM_SIZE_FOR_TRANSACTION).forEach {
+                    sendLog(context, it)
+                }
             }
         }
 
