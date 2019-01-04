@@ -12,8 +12,6 @@ interface LogFormatter {
     fun format(records: List<LogRecord>): String
 
     open class Default(val context: Context) : LogFormatter {
-        private val processNameMapping: MutableMap<Int, String> = mutableMapOf()
-
         private val header: String by lazy {
             val packageManager = context.packageManager
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -31,9 +29,8 @@ interface LogFormatter {
         override fun format(record: LogRecord): String {
             val dateText = formatDate(record.date)
             val priorityText = formatPriority(record.priority)
-            val processShortName = processNameMapping.getOrPut(record.pid) { context.getProcessShortName(record.pid) }
             return record.message.split('\n').joinToString(separator = "\n") { line ->
-                formatLine(priorityText, record.tag, line, record.pid, record.tid, dateText, processShortName)
+                formatLine(priorityText, record.tag, line, record.pid, record.tid, dateText)
             }
         }
 
@@ -41,8 +38,8 @@ interface LogFormatter {
             return records.joinToString(separator = "\n") { format(it) }
         }
 
-        open fun formatLine(priorityText: String, tag: String, line: String, pid: Int, tid: Int, dateText: String, processShortName: String): String {
-            return "$dateText $pid-$tid/$processShortName $priorityText/$tag: $line"
+        open fun formatLine(priorityText: String, tag: String, line: String, pid: Int, tid: Int, dateText: String): String {
+            return "$dateText $pid-$tid $priorityText/$tag: $line"
         }
 
         open fun formatDate(date: Date): String = DATE_FORMAT.format(date)
