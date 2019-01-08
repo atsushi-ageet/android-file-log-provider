@@ -327,6 +327,12 @@ open class FileLogProvider : ContentProvider() {
             setPriority(context, LogWriter.PRIORITY_NONE)
         }
 
+        @JvmStatic
+        fun isCrashOnly(context: Context): Boolean = getPriority(context) == LogWriter.PRIORITY_CRASH
+
+        @JvmStatic
+        fun isDisabled(context: Context): Boolean = getPriority(context) == LogWriter.PRIORITY_NONE
+
         private fun loadPriority(context: Context): Int {
             return context.contentResolver.query(Path.PRIORITY.getContentUri(context), null, null, null, null)?.use { cursor ->
                 cursor.moveToFirst()
