@@ -18,9 +18,6 @@ open class FileLogProvider : ContentProvider() {
     private val sharedPreferences: SharedPreferences get() = context.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
     private lateinit var logWriter: LogWriter
     private lateinit var rollingFile: LogStrategy.RollingFile
-    private val logFormatter: LogFormatter by lazy { createLogFormatter() }
-
-    open fun createLogFormatter(): LogFormatter = LogFormatter.Default(context)
 
     private fun getInternalFilesDir(path: String) = File(context.filesDir, path).also { file ->
         if (!file.exists()) file.mkdirs()
@@ -32,6 +29,12 @@ open class FileLogProvider : ContentProvider() {
         else -> LogStrategy.RollingFile.getDefaultLogDir(context)
     }
 
+    private fun createLogFormatter(context: Context, name: String): LogFormatter {
+        val formatterClass = Class.forName(name)
+        require(LogFormatter::class.java.isAssignableFrom(formatterClass))
+        return formatterClass.getConstructor(Context::class.java).newInstance(context) as LogFormatter
+    }
+
     override fun onCreate(): Boolean {
         val metaData = getMetaData(context)
         val initialPriority = metaData.getInt(MetaData.INITIAL_PRIORITY, LogWriter.PRIORITY_NONE)
@@ -40,6 +43,9 @@ open class FileLogProvider : ContentProvider() {
         val logFileDir = getLogFileDirPath(metaData.getString(MetaData.LOG_FILE_DIR, ""))
         val logFileBaseName = metaData.getString(MetaData.LOG_FILE_BASE_NAME, LogStrategy.RollingFile.DEFAULT_LOG_FILE_BASE_NAME)
         val logFileExt = metaData.getString(MetaData.LOG_FILE_EXT, LogStrategy.RollingFile.DEFAULT_LOG_FILE_EXT)
+        val logFormatter = metaData.getString(MetaData.LOG_FORMATTER, "").takeIf { it.isNotBlank() }?.let { className ->
+            createLogFormatter(context, className)
+        } ?: LogFormatter.Default(context)
         rollingFile = LogStrategy.RollingFile(
                 context = context,
                 formatter = logFormatter,
@@ -58,7 +64,8 @@ open class FileLogProvider : ContentProvider() {
                     + "maxLogFileSize = $maxLogFileSize, "
                     + "maxLogFileBackup = $maxLogFileBackup, "
                     + "logFileBaseName = $logFileBaseName, "
-                    + "logFileExt = $logFileExt"
+                    + "logFileExt = $logFileExt, "
+                    + "logFormatter = $logFormatter"
                     + ")"
         )
         return true
@@ -161,6 +168,7 @@ open class FileLogProvider : ContentProvider() {
         const val LOG_FILE_DIR: String = "logFileDir"
         const val LOG_FILE_BASE_NAME: String = "logFileBaseName"
         const val LOG_FILE_EXT: String = "logFileExt"
+        const val LOG_FORMATTER: String = "logFormatter"
     }
 
     companion object {

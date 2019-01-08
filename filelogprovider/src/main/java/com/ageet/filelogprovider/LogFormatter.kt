@@ -6,12 +6,12 @@ import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 
-interface LogFormatter {
-    fun header(): String
-    fun format(record: LogRecord): String
-    fun format(records: List<LogRecord>): String
+abstract class  LogFormatter(val context: Context) {
+    abstract fun header(): String
+    abstract fun format(record: LogRecord): String
+    abstract fun format(records: List<LogRecord>): String
 
-    open class Default(val context: Context) : LogFormatter {
+    open class Default(context: Context) : LogFormatter(context) {
         private val header: String by lazy {
             val packageManager = context.packageManager
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
