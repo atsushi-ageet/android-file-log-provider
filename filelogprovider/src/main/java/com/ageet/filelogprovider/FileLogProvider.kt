@@ -197,7 +197,7 @@ open class FileLogProvider : ContentProvider() {
                         override fun log(record: LogRecord) {
                             val crashLog = newContentValues(record.priority, record.tag, record.message, record.pid, record.tid, record.date)
                             addLogs(listOf(crashLog))
-                            sendLog(context, pollLogs())
+                            flushLogs(context)
                         }
                     })
                 }
@@ -219,13 +219,7 @@ open class FileLogProvider : ContentProvider() {
                 newContentValues(priority, tag, it, pid, tid, date)
             })
             executor.execute {
-                val logs = pollLogs()
-                if (logs.isEmpty()) {
-                    return@execute
-                }
-                logs.chunked(MAX_LOG_ITEM_SIZE_FOR_TRANSACTION).forEach {
-                    sendLog(context, it)
-                }
+                flushLogs(context)
             }
         }
 
@@ -267,6 +261,16 @@ open class FileLogProvider : ContentProvider() {
                 contentProviderClient?.release()
             }
             contentProviderClient = null
+        }
+
+        private fun flushLogs(context: Context) {
+            val logs = pollLogs()
+            if (logs.isEmpty()) {
+                return
+            }
+            logs.chunked(MAX_LOG_ITEM_SIZE_FOR_TRANSACTION).forEach {
+                sendLog(context, it)
+            }
         }
 
         private fun sendLog(context: Context, logs: List<ContentValues>, retry: Boolean = false) {
