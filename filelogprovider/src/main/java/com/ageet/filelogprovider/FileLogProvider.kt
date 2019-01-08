@@ -183,7 +183,7 @@ open class FileLogProvider : ContentProvider() {
 
         private var isInitialized: Boolean = false
 
-        fun initialize(context: Context) {
+        @JvmStatic fun initialize(context: Context) {
             if (!isInitialized) {
                 isInitialized = true
                 context.contentResolver.registerContentObserver(Path.PRIORITY.getContentUri(context), false, object : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -203,11 +203,11 @@ open class FileLogProvider : ContentProvider() {
             }
         }
 
-        fun getMetaData(context: Context): Bundle = getProviderInfo(context).metaData ?: Bundle()
+        private fun getMetaData(context: Context): Bundle = getProviderInfo(context).metaData ?: Bundle()
 
-        fun isLoggerProcess(context: Context): Boolean = context.currentProcessName == getProviderInfo(context).processName
+        @JvmStatic fun isLoggerProcess(context: Context): Boolean = context.currentProcessName == getProviderInfo(context).processName
 
-        fun postLog(context: Context, priority: Int, tag: String, message: String, pid: Int = Process.myPid(), tid: Int = Process.myTid(), date: Date = Date()) {
+        @JvmStatic fun postLog(context: Context, priority: Int, tag: String, message: String, pid: Int = Process.myPid(), tid: Int = Process.myTid(), date: Date = Date()) {
             if (!isInitialized || !checkPriority(context, priority)) {
                 return
             }
@@ -288,7 +288,7 @@ open class FileLogProvider : ContentProvider() {
             }
         }
 
-        fun loadFiles(context: Context): List<File> {
+        @JvmStatic fun loadFiles(context: Context): List<File> {
             return context.contentResolver.query(Path.FILES.getContentUri(context), null, null, null, null)?.use { cursor ->
                 generateSequence { cursor.takeIf { it.moveToNext() } }
                         .map { File(it.getString(cursor.getColumnIndex(Column.FILE))) }
@@ -298,23 +298,23 @@ open class FileLogProvider : ContentProvider() {
 
         private var priority: Int = -1
 
-        fun getPriority(context: Context): Int {
+        @JvmStatic fun getPriority(context: Context): Int {
             if (priority == -1) {
                 priority = loadPriority(context)
             }
             return priority
         }
 
-        fun setPriority(context: Context, priority: Int) {
+        @JvmStatic fun setPriority(context: Context, priority: Int) {
             FileLogProvider.priority = priority
             savePriority(context, priority)
         }
 
-        fun crashOnly(context: Context) {
+        @JvmStatic fun crashOnly(context: Context) {
             setPriority(context, LogWriter.PRIORITY_CRASH)
         }
 
-        fun disable(context: Context) {
+        @JvmStatic fun disable(context: Context) {
             setPriority(context, LogWriter.PRIORITY_NONE)
         }
 
