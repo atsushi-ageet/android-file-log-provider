@@ -156,11 +156,11 @@ open class FileLogProvider : ContentProvider() {
 
     private object MetaData {
         const val INITIAL_PRIORITY: String = "initialPriority"
-        const val MAX_LOG_FILE_SIZE_IN_MB: String = "RollingFile.maxLogFileSizeInMb"
-        const val MAX_LOG_FILE_BACKUP: String = "RollingFile.maxLogFileBackup"
-        const val LOG_FILE_DIR: String = "RollingFile.logFileDir"
-        const val LOG_FILE_BASE_NAME: String = "RollingFile.logFileBaseName"
-        const val LOG_FILE_EXT: String = "RollingFile.logFileExt"
+        const val MAX_LOG_FILE_SIZE_IN_MB: String = "maxLogFileSizeInMb"
+        const val MAX_LOG_FILE_BACKUP: String = "maxLogFileBackup"
+        const val LOG_FILE_DIR: String = "logFileDir"
+        const val LOG_FILE_BASE_NAME: String = "logFileBaseName"
+        const val LOG_FILE_EXT: String = "logFileExt"
     }
 
     companion object {
