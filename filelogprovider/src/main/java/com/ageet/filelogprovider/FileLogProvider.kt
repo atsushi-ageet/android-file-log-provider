@@ -84,7 +84,9 @@ open class FileLogProvider : ContentProvider() {
         if ( uri == null || values == null ) {
             return null
         }
-        logWriter.printLog(values.toLogRecord())
+        executor.execute {
+            logWriter.printLog(values.toLogRecord())
+        }
         return null
     }
 
@@ -93,7 +95,9 @@ open class FileLogProvider : ContentProvider() {
             return 0
         }
         val records = values.map { it.toLogRecord() }
-        logWriter.printLog(records)
+        executor.execute {
+            logWriter.printLog(records)
+        }
         return records.size
     }
 
