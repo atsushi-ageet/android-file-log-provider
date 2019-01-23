@@ -107,11 +107,13 @@ open class FileLogProvider : ContentProvider() {
         }
         when (matcher.match(uri)) {
             Path.PRIORITY.code -> {
-                val priority = values.getAsInteger(Column.PRIORITY)
-                Log.i(LOG_TAG, "Update priority to $priority")
-                logWriter.priority = priority
-                sharedPreferences.edit().putInt(Column.PRIORITY, priority).apply()
-                context.contentResolver.notifyChange(Path.PRIORITY.getContentUri(context), null)
+                executor.execute {
+                    val priority = values.getAsInteger(Column.PRIORITY)
+                    Log.i(LOG_TAG, "Update priority to $priority")
+                    logWriter.priority = priority
+                    sharedPreferences.edit().putInt(Column.PRIORITY, priority).apply()
+                    context.contentResolver.notifyChange(Path.PRIORITY.getContentUri(context), null)
+                }
             }
         }
         return 1
