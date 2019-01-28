@@ -84,7 +84,7 @@ open class FileLogProvider : ContentProvider() {
             Thread.setDefaultUncaughtExceptionHandler(object : CrashHandler(context, Thread.getDefaultUncaughtExceptionHandler()) {
                 override fun log(record: LogRecord) {
                     executor.shutdown()
-                    executor.awaitTermination(3, TimeUnit.SECONDS)
+                    executor.awaitTermination(TIMEOUT_CRASH_PROCESSING_IN_SEC, TimeUnit.SECONDS)
                     if (status >= Status.CRASH_ONLY) {
                         logStrategy.printLog(record)
                     }
@@ -204,6 +204,7 @@ open class FileLogProvider : ContentProvider() {
     companion object {
         private const val LOG_TAG: String = "FileLogProvider"
 
+        private const val TIMEOUT_CRASH_PROCESSING_IN_SEC: Long = 3
         private const val MAX_LOG_ITEM_SIZE_FOR_TRANSACTION: Int = 1000
         private const val MAX_LOG_MESSAGE_LENGTH: Int = 20000
         private const val PREFIX_EXTERNAL_FILES: String = "{external-path}"
@@ -234,6 +235,8 @@ open class FileLogProvider : ContentProvider() {
                     Thread.setDefaultUncaughtExceptionHandler(object : CrashHandler(context, Thread.getDefaultUncaughtExceptionHandler()) {
                         override fun log(record: LogRecord) {
                             if (getStatus(context) >= Status.CRASH_ONLY) {
+                                executor.shutdown()
+                                executor.awaitTermination(TIMEOUT_CRASH_PROCESSING_IN_SEC, TimeUnit.SECONDS)
                                 val crashLog = newContentValues(record.priority, record.tag, record.message, record.pid, record.tid, record.date)
                                 addLogs(listOf(crashLog))
                                 flushLogs(context)
