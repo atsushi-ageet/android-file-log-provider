@@ -378,7 +378,7 @@ open class FileLogProvider : ContentProvider() {
         }
 
         @JvmStatic
-        fun isEnable(context: Context): Boolean = getStatus(context) == Status.ENABLE
+        fun isEnabled(context: Context): Boolean = getStatus(context) == Status.ENABLE
 
         @JvmStatic
         fun isCrashOnly(context: Context): Boolean = getStatus(context) == Status.CRASH_ONLY
