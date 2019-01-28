@@ -11,13 +11,20 @@ import android.os.*
 import android.util.Log
 import java.io.File
 import java.util.*
-import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 open class FileLogProvider : ContentProvider() {
+    enum class Status {
+        DISABLE,
+        CRASH_ONLY,
+        ENABLE,
+    }
+
     private val sharedPreferences: SharedPreferences get() = context.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
-    private lateinit var logWriter: LogWriter
-    private lateinit var rollingFile: LogStrategy.RollingFile
+    private lateinit var logStrategy: LogStrategy
+    private var status: Status = Status.DISABLE
 
     private fun getInternalFilesDir(path: String) = File(context.filesDir, path).also { file ->
         if (!file.exists()) file.mkdirs()
@@ -37,7 +44,7 @@ open class FileLogProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
         val metaData = getMetaData(context)
-        val initialPriority = metaData.getInt(MetaData.INITIAL_PRIORITY, LogWriter.PRIORITY_NONE)
+        val initialStatus = metaData.getString(MetaData.INITIAL_STATUS, Status.DISABLE.name)
         val maxLogFileSize = metaData[MetaData.MAX_LOG_FILE_SIZE_IN_MB]?.let { it as? Float }?.let { it * 1024 * 1024 }?.toLong() ?: LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_SIZE
         val maxLogFileBackup = metaData.getInt(MetaData.MAX_LOG_FILE_BACKUP, LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_BACKUP)
         val logFileDir = getLogFileDirPath(metaData.getString(MetaData.LOG_FILE_DIR, ""))
@@ -46,7 +53,8 @@ open class FileLogProvider : ContentProvider() {
         val logFormatter = metaData.getString(MetaData.LOG_FORMATTER, "").takeIf { it.isNotBlank() }?.let { className ->
             createLogFormatter(context, className)
         } ?: LogFormatter.Default(context)
-        rollingFile = LogStrategy.RollingFile(
+        status = Status.valueOf(sharedPreferences.getString(Column.STATUS, initialStatus).orEmpty())
+        logStrategy = LogStrategy.RollingFile(
                 context = context,
                 formatter = logFormatter,
                 maxLogFileSize = maxLogFileSize,
@@ -54,13 +62,11 @@ open class FileLogProvider : ContentProvider() {
                 logFileDir = logFileDir,
                 logFileBaseName = logFileBaseName,
                 logFileExt = logFileExt)
-        logWriter = LogWriter(rollingFile)
-        logWriter.installCrashHandler(context)
-        logWriter.priority = sharedPreferences.getInt(Column.PRIORITY, initialPriority)
+        installCrashHandlerForLoggerProcess(context)
         Log.i(LOG_TAG,  "Initialize file log provider("
                     + "processName = ${getProviderInfo(context).processName}, "
-                    + "initialPriority = $initialPriority, "
-                    + "currentPriority = ${logWriter.priority}, "
+                    + "initialStatus = $initialStatus, "
+                    + "currentStatus = $status, "
                     + "maxLogFileSize = $maxLogFileSize, "
                     + "maxLogFileBackup = $maxLogFileBackup, "
                     + "logFileBaseName = $logFileBaseName, "
@@ -69,6 +75,23 @@ open class FileLogProvider : ContentProvider() {
                     + ")"
         )
         return true
+    }
+
+    private var isInstalledCrashHandler = false
+
+    private fun installCrashHandlerForLoggerProcess(context: Context) {
+        if (!isInstalledCrashHandler) {
+            Thread.setDefaultUncaughtExceptionHandler(object : CrashHandler(context, Thread.getDefaultUncaughtExceptionHandler()) {
+                override fun log(record: LogRecord) {
+                    executor.shutdown()
+                    executor.awaitTermination(3, TimeUnit.SECONDS)
+                    if (status >= Status.CRASH_ONLY) {
+                        logStrategy.printLog(record)
+                    }
+                }
+            })
+            isInstalledCrashHandler = true
+        }
     }
 
     private fun ContentValues.toLogRecord(): LogRecord = LogRecord(
@@ -85,7 +108,7 @@ open class FileLogProvider : ContentProvider() {
             return null
         }
         executor.execute {
-            logWriter.printLog(values.toLogRecord())
+            logStrategy.printLog(values.toLogRecord())
         }
         return null
     }
@@ -96,7 +119,7 @@ open class FileLogProvider : ContentProvider() {
         }
         val records = values.map { it.toLogRecord() }
         executor.execute {
-            logWriter.printLog(records)
+            logStrategy.printLog(records)
         }
         return records.size
     }
@@ -106,13 +129,13 @@ open class FileLogProvider : ContentProvider() {
             return 0
         }
         when (matcher.match(uri)) {
-            Path.PRIORITY.code -> {
+            Path.STATUS.code -> {
                 executor.execute {
-                    val priority = values.getAsInteger(Column.PRIORITY)
-                    Log.i(LOG_TAG, "Update priority to $priority")
-                    logWriter.priority = priority
-                    sharedPreferences.edit().putInt(Column.PRIORITY, priority).apply()
-                    context.contentResolver.notifyChange(Path.PRIORITY.getContentUri(context), null)
+                    val status = values.getAsString(Column.STATUS)
+                    Log.i(LOG_TAG, "Update status to $status")
+                    this.status = Status.valueOf(status)
+                    sharedPreferences.edit().putString(Column.STATUS, status).apply()
+                    context.contentResolver.notifyChange(Path.STATUS.getContentUri(context), null)
                 }
             }
         }
@@ -124,13 +147,13 @@ open class FileLogProvider : ContentProvider() {
             return null
         }
         return when (matcher.match(uri)) {
-            Path.PRIORITY.code -> {
-                MatrixCursor(arrayOf(Column.PRIORITY), 1).also { cursor ->
-                    cursor.addRow(arrayOf(logWriter.priority))
+            Path.STATUS.code -> {
+                MatrixCursor(arrayOf(Column.STATUS), 1).also { cursor ->
+                    cursor.addRow(arrayOf(status.name))
                 }
             }
             Path.FILES.code -> {
-                val files = rollingFile.logFileList
+                val files = logStrategy.logFileList
                 MatrixCursor(arrayOf(Column.FILE), files.size).also { cursor ->
                     files.forEach {
                         cursor.addRow(arrayOf(it.absolutePath))
@@ -145,14 +168,14 @@ open class FileLogProvider : ContentProvider() {
     override fun delete(uri: Uri?, selection: String?, selectionArgs: Array<out String>?): Int = throw UnsupportedOperationException("unsupported")
 
     private val matcher: UriMatcher by lazy { UriMatcher(UriMatcher.NO_MATCH).apply {
-        addURI(Path.PRIORITY)
+        addURI(Path.STATUS)
         addURI(Path.FILES)
     }}
 
     private fun UriMatcher.addURI(paths: Path) = addURI(getAuthority(context), paths.path, paths.code)
 
     private enum class Path(val path: String, val code: Int) {
-        PRIORITY("priority", 1),
+        STATUS("status", 1),
         FILES("files", 2);
         fun getContentUri(context: Context) = getContentUri(context, path)
     }
@@ -164,11 +187,12 @@ open class FileLogProvider : ContentProvider() {
         const val PID: String = "pid"
         const val TID: String = "tid"
         const val MESSAGE: String = "message"
+        const val STATUS: String = "status"
         const val FILE: String = "file"
     }
 
     private object MetaData {
-        const val INITIAL_PRIORITY: String = "initialPriority"
+        const val INITIAL_STATUS: String = "initialStatus"
         const val MAX_LOG_FILE_SIZE_IN_MB: String = "maxLogFileSizeInMb"
         const val MAX_LOG_FILE_BACKUP: String = "maxLogFileBackup"
         const val LOG_FILE_DIR: String = "logFileDir"
@@ -183,7 +207,7 @@ open class FileLogProvider : ContentProvider() {
         private const val MAX_LOG_ITEM_SIZE_FOR_TRANSACTION: Int = 1000
         private const val MAX_LOG_MESSAGE_LENGTH: Int = 20000
         private const val PREFIX_EXTERNAL_FILES: String = "{external-path}"
-        private val executor: Executor = Executors.newSingleThreadExecutor()
+        private val executor: ExecutorService = Executors.newSingleThreadExecutor()
         private var contentProviderClient: ContentProviderClient? = null
         private var contentUri: Uri = Uri.EMPTY
         private var contentValues: List<ContentValues> = emptyList()
@@ -201,17 +225,19 @@ open class FileLogProvider : ContentProvider() {
         fun initialize(context: Context) {
             if (!isInitialized) {
                 isInitialized = true
-                context.contentResolver.registerContentObserver(Path.PRIORITY.getContentUri(context), false, object : ContentObserver(Handler(Looper.getMainLooper())) {
+                context.contentResolver.registerContentObserver(Path.STATUS.getContentUri(context), false, object : ContentObserver(Handler(Looper.getMainLooper())) {
                     override fun onChange(selfChange: Boolean) {
-                        priority = loadPriority(context)
+                        status = loadStatus(context)
                     }
                 })
                 if (!isLoggerProcess(context)) {
-                    Thread.setDefaultUncaughtExceptionHandler(object : LogWriter.CrashHandler(context, Thread.getDefaultUncaughtExceptionHandler()) {
+                    Thread.setDefaultUncaughtExceptionHandler(object : CrashHandler(context, Thread.getDefaultUncaughtExceptionHandler()) {
                         override fun log(record: LogRecord) {
-                            val crashLog = newContentValues(record.priority, record.tag, record.message, record.pid, record.tid, record.date)
-                            addLogs(listOf(crashLog))
-                            flushLogs(context)
+                            if (getStatus(context) >= Status.CRASH_ONLY) {
+                                val crashLog = newContentValues(record.priority, record.tag, record.message, record.pid, record.tid, record.date)
+                                addLogs(listOf(crashLog))
+                                flushLogs(context)
+                            }
                         }
                     })
                 }
@@ -226,7 +252,7 @@ open class FileLogProvider : ContentProvider() {
         @JvmStatic
         @JvmOverloads
         fun postLog(context: Context, priority: Int, tag: String, message: String, pid: Int = Process.myPid(), tid: Int = Process.myTid(), date: Date = Date()) {
-            if (!isInitialized || !checkPriority(context, priority)) {
+            if (!isInitialized || getStatus(context) != Status.ENABLE) {
                 return
             }
             addLogs(message.chunked(MAX_LOG_MESSAGE_LENGTH).map {
@@ -236,8 +262,6 @@ open class FileLogProvider : ContentProvider() {
                 flushLogs(context)
             }
         }
-
-        private fun checkPriority(context: Context, priority: Int) = getPriority(context) <= priority
 
         private fun addLogs(logs: List<ContentValues>): Unit = synchronized(this) {
             contentValues += logs
@@ -319,49 +343,57 @@ open class FileLogProvider : ContentProvider() {
             } ?: emptyList()
         }
 
-        private var priority: Int = -1
+        private var status: Status? = null
 
         @JvmStatic
-        fun getPriority(context: Context): Int {
-            if (priority == -1) {
-                priority = loadPriority(context)
+        fun getStatus(context: Context): Status {
+            if (status == null) {
+                status = loadStatus(context)
             }
-            return priority
+            return status ?: Status.DISABLE
         }
 
         @JvmStatic
-        fun setPriority(context: Context, priority: Int) {
-            FileLogProvider.priority = priority
-            savePriority(context, priority)
+        fun setStatus(context: Context, status: Status) {
+            FileLogProvider.status = status
+            saveStatus(context, status)
+        }
+
+        @JvmStatic
+        fun enable(context: Context) {
+            setStatus(context, Status.ENABLE)
         }
 
         @JvmStatic
         fun crashOnly(context: Context) {
-            setPriority(context, LogWriter.PRIORITY_CRASH)
+            setStatus(context, Status.CRASH_ONLY)
         }
 
         @JvmStatic
         fun disable(context: Context) {
-            setPriority(context, LogWriter.PRIORITY_NONE)
+            setStatus(context, Status.DISABLE)
         }
 
         @JvmStatic
-        fun isCrashOnly(context: Context): Boolean = getPriority(context) == LogWriter.PRIORITY_CRASH
+        fun isEnable(context: Context): Boolean = getStatus(context) == Status.ENABLE
 
         @JvmStatic
-        fun isDisabled(context: Context): Boolean = getPriority(context) == LogWriter.PRIORITY_NONE
+        fun isCrashOnly(context: Context): Boolean = getStatus(context) == Status.CRASH_ONLY
 
-        private fun loadPriority(context: Context): Int {
-            return context.contentResolver.query(Path.PRIORITY.getContentUri(context), null, null, null, null)?.use { cursor ->
+        @JvmStatic
+        fun isDisabled(context: Context): Boolean = getStatus(context) == Status.DISABLE
+
+        private fun loadStatus(context: Context): Status {
+            return context.contentResolver.query(Path.STATUS.getContentUri(context), null, null, null, null)?.use { cursor ->
                 cursor.moveToFirst()
-                cursor.getInt(cursor.getColumnIndex(Column.PRIORITY))
-            } ?: LogWriter.PRIORITY_NONE
+                Status.valueOf(cursor.getString(cursor.getColumnIndex(Column.STATUS)))
+            } ?: Status.DISABLE
         }
 
-        private fun savePriority(context: Context, priority: Int) {
+        private fun saveStatus(context: Context, status: Status) {
             val values = ContentValues()
-            values.put(Column.PRIORITY, priority)
-            context.contentResolver.update(Path.PRIORITY.getContentUri(context), values, null, null)
+            values.put(Column.STATUS, status.name)
+            context.contentResolver.update(Path.STATUS.getContentUri(context), values, null, null)
         }
     }
 }

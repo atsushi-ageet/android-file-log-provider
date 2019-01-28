@@ -1,7 +1,5 @@
 package com.ageet.filelogprovider
 
-import android.os.Parcel
-import android.os.Parcelable
 import android.os.Process
 import java.util.*
 

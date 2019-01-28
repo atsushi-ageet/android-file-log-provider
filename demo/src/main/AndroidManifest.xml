@@ -24,7 +24,7 @@
         <provider
             android:name="com.ageet.filelogprovider.FileLogProvider"
             android:authorities="${applicationId}.provider.file_log">
-            <meta-data android:name="initialPriority" android:value="2" />
+            <meta-data android:name="initialStatus" android:value="ENABLE" />
             <meta-data android:name="maxLogFileSizeInMb" android:value="0.3" />
             <meta-data android:name="maxLogFileBackup" android:value="6" />
             <meta-data android:name="logFileDir" android:value="logs" />

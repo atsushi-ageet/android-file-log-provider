@@ -6,6 +6,8 @@ import java.io.*
 
 abstract class LogStrategy(val formatter: LogFormatter) {
 
+    abstract val logFileList: List<File>
+
     open fun printLog(record: LogRecord) {
         printLog(formatter.header(), formatter.format(record))
     }
@@ -26,7 +28,7 @@ abstract class LogStrategy(val formatter: LogFormatter) {
         private val logFileNameList: List<String> get() = logFileDir.list { _, fileName ->
             fileName.matches("$logFileBaseName(_\\d+)?\\.$logFileExt".toRegex())
         }.toList()
-        val logFileList: List<File> get() = logFileNameList.map { File(logFileDir, it) }
+        override val logFileList: List<File> get() = logFileNameList.map { File(logFileDir, it) }
 
         override fun printLog(header: String, formattedLog: String) {
             rotateIfNeeded()
