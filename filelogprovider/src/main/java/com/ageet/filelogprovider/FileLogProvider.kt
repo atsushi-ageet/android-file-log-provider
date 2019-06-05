@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-open class FileLogProvider : ContentProvider() {
+class FileLogProvider : ContentProvider() {
     enum class Status {
         DISABLE,
         CRASH_ONLY,
@@ -218,7 +218,7 @@ open class FileLogProvider : ContentProvider() {
         private fun getContentUri(context: Context, path: String): Uri = getContentUri(context).buildUpon().appendPath(path).build()
 
         private fun getProviderInfo(context: Context): ProviderInfo =
-                context.packageManager.resolveContentProvider(FileLogProvider.getAuthority(context), PackageManager.GET_META_DATA)
+                context.packageManager.getProviderInfo(ComponentName(context, FileLogProvider::class.java), PackageManager.GET_META_DATA)
 
         private var isInitialized: Boolean = false
 
