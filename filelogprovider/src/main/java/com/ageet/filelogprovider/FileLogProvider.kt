@@ -1,5 +1,6 @@
 package com.ageet.filelogprovider
 
+import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
 import android.content.pm.ProviderInfo
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+@SuppressLint("LogNotTimber")
 class FileLogProvider : ContentProvider() {
     enum class Status {
         DISABLE,
@@ -22,18 +24,18 @@ class FileLogProvider : ContentProvider() {
         ENABLE,
     }
 
-    private val sharedPreferences: SharedPreferences get() = context.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences get() = requireContext().getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
     private lateinit var logStrategy: LogStrategy
     private var status: Status = Status.DISABLE
 
-    private fun getInternalFilesDir(path: String) = File(context.filesDir, path).also { file ->
+    private fun getInternalFilesDir(path: String) = File(requireContext().filesDir, path).also { file ->
         if (!file.exists()) file.mkdirs()
     }
 
     private fun getLogFileDirPath(path: String): File = when {
-        path.startsWith(PREFIX_EXTERNAL_FILES) -> requireNotNull(context.getExternalFilesDir(path.removePrefix(PREFIX_EXTERNAL_FILES)))
+        path.startsWith(PREFIX_EXTERNAL_FILES) -> requireNotNull(requireContext().getExternalFilesDir(path.removePrefix(PREFIX_EXTERNAL_FILES)))
         path.isNotBlank() -> getInternalFilesDir(path)
-        else -> LogStrategy.RollingFile.getDefaultLogDir(context)
+        else -> LogStrategy.RollingFile.getDefaultLogDir(requireContext())
     }
 
     private fun createLogFormatter(context: Context, name: String): LogFormatter {
@@ -42,7 +44,10 @@ class FileLogProvider : ContentProvider() {
         return formatterClass.getConstructor(Context::class.java).newInstance(context) as LogFormatter
     }
 
+    private fun requireContext(): Context = requireNotNull(context)
+
     override fun onCreate(): Boolean {
+        val context = requireContext()
         val metaData = getMetaData(context)
         val initialStatus = metaData.getString(MetaData.INITIAL_STATUS, Status.DISABLE.name)
         val maxLogFileSize = metaData[MetaData.MAX_LOG_FILE_SIZE_IN_MB]?.let { it as? Float }?.let { it * 1024 * 1024 }?.toLong() ?: LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_SIZE
@@ -135,6 +140,7 @@ class FileLogProvider : ContentProvider() {
                     Log.i(LOG_TAG, "Update status to $status")
                     this.status = Status.valueOf(status)
                     sharedPreferences.edit().putString(Column.STATUS, status).apply()
+                    val context = requireContext()
                     context.contentResolver.notifyChange(Path.STATUS.getContentUri(context), null)
                 }
             }
@@ -172,7 +178,7 @@ class FileLogProvider : ContentProvider() {
         addURI(Path.FILES)
     }}
 
-    private fun UriMatcher.addURI(paths: Path) = addURI(getAuthority(context), paths.path, paths.code)
+    private fun UriMatcher.addURI(paths: Path) = addURI(getAuthority(requireContext()), paths.path, paths.code)
 
     private enum class Path(val path: String, val code: Int) {
         STATUS("status", 1),
@@ -201,6 +207,7 @@ class FileLogProvider : ContentProvider() {
         const val LOG_FORMATTER: String = "logFormatter"
     }
 
+    @Suppress("unused")
     companion object {
         private const val LOG_TAG: String = "FileLogProvider"
 
@@ -267,7 +274,7 @@ class FileLogProvider : ContentProvider() {
         }
 
         private fun addLogs(logs: List<ContentValues>): Unit = synchronized(this) {
-            contentValues += logs
+            contentValues = contentValues + logs
         }
 
         private fun pollLogs(): List<ContentValues> = synchronized(this) {

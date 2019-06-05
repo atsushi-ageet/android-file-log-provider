@@ -5,7 +5,7 @@
 
     <application
         android:name=".DemoApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -23,7 +23,8 @@
 
         <provider
             android:name="com.ageet.filelogprovider.FileLogProvider"
-            android:authorities="${applicationId}.provider.file_log">
+            android:authorities="${applicationId}.provider.file_log"
+            android:exported="false">
             <meta-data android:name="initialStatus" android:value="ENABLE" />
             <meta-data android:name="maxLogFileSizeInMb" android:value="0.3" />
             <meta-data android:name="maxLogFileBackup" android:value="6" />

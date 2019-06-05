@@ -1,9 +1,11 @@
 package com.ageet.filelogprovider
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import java.io.*
 
+@SuppressLint("LogNotTimber")
 abstract class LogStrategy(val formatter: LogFormatter) {
 
     abstract val logFileList: List<File>
