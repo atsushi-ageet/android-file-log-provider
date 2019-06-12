@@ -28,14 +28,20 @@ class FileLogProvider : ContentProvider() {
     private lateinit var logStrategy: LogStrategy
     private var status: Status = Status.DISABLE
 
-    private fun getInternalFilesDir(path: String) = File(requireContext().filesDir, path).also { file ->
+    private fun getInternalFilesDir(context: Context, path: String) = File(context.filesDir, path).also { file ->
         if (!file.exists()) file.mkdirs()
     }
 
-    private fun getLogFileDirPath(path: String): File = when {
-        path.startsWith(PREFIX_EXTERNAL_FILES) -> requireNotNull(requireContext().getExternalFilesDir(path.removePrefix(PREFIX_EXTERNAL_FILES)))
-        path.isNotBlank() -> getInternalFilesDir(path)
-        else -> LogStrategy.RollingFile.getDefaultLogDir(requireContext())
+    private fun getLogFileDirPath(context: Context, path: String): File = when {
+        path.startsWith(PREFIX_EXTERNAL_FILES) -> {
+            context.getExternalFilesDir(path.removePrefix(PREFIX_EXTERNAL_FILES))
+                    ?: run {
+                        Log.w(LOG_TAG, "Could not get external files dir($path)")
+                        getInternalFilesDir(context, path)
+                    }
+        }
+        path.isNotBlank() -> getInternalFilesDir(context, path)
+        else -> LogStrategy.RollingFile.getDefaultLogDir(context)
     }
 
     private fun createLogFormatter(context: Context, name: String): LogFormatter {
@@ -52,7 +58,7 @@ class FileLogProvider : ContentProvider() {
         val initialStatus = metaData.getString(MetaData.INITIAL_STATUS, Status.DISABLE.name)
         val maxLogFileSize = metaData[MetaData.MAX_LOG_FILE_SIZE_IN_MB]?.let { it as? Float }?.let { it * 1024 * 1024 }?.toLong() ?: LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_SIZE
         val maxLogFileBackup = metaData.getInt(MetaData.MAX_LOG_FILE_BACKUP, LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_BACKUP)
-        val logFileDir = getLogFileDirPath(metaData.getString(MetaData.LOG_FILE_DIR, ""))
+        val logFileDir = getLogFileDirPath(context, metaData.getString(MetaData.LOG_FILE_DIR, ""))
         val logFileBaseName = metaData.getString(MetaData.LOG_FILE_BASE_NAME, LogStrategy.RollingFile.DEFAULT_LOG_FILE_BASE_NAME)
         val logFileExt = metaData.getString(MetaData.LOG_FILE_EXT, LogStrategy.RollingFile.DEFAULT_LOG_FILE_EXT)
         val logFormatter = metaData.getString(MetaData.LOG_FORMATTER, "").takeIf { it.isNotBlank() }?.let { className ->
