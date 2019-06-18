@@ -274,7 +274,7 @@ class FileLogProvider : ContentProvider() {
             addLogs(message.chunked(MAX_LOG_MESSAGE_LENGTH).map {
                 newContentValues(priority, tag, it, pid, tid, date)
             })
-            executor.execute {
+            executor.takeUnless { it.isShutdown }?.execute {
                 flushLogs(context)
             }
         }
