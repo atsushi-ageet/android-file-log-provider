@@ -5,5 +5,5 @@ import android.content.Context
 import android.os.Process
 
 private val Context.activityManager: ActivityManager get() = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-internal fun Context.getProcessName(pid: Int): String = activityManager.runningAppProcesses.firstOrNull { it.pid == pid }?.processName ?: "Process-$pid"
+internal fun Context.getProcessName(pid: Int): String = activityManager.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName ?: "Process-$pid"
 internal val Context.currentProcessName: String get() = getProcessName(Process.myPid())
