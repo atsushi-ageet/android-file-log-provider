@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(28)
+    compileSdkVersion(30)
 
     defaultConfig {
         applicationId = "com.ageet.filelogprovider.demo"
         minSdkVersion(16)
-        targetSdkVersion(28)
+        targetSdkVersion(30)
         versionCode = 1
         versionName = "1.0"
     }
@@ -26,9 +26,9 @@ android {
 
 dependencies {
     implementation(kotlin("stdlib-jdk7", KotlinCompilerVersion.VERSION))
-    implementation("com.android.support:appcompat-v7:28.0.0")
-    implementation("com.android.support.constraint:constraint-layout:1.1.3")
-    implementation("com.android.support:design:28.0.0")
+    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.0.1")
+    implementation("com.google.android.material:material:1.2.1")
     implementation("com.jakewharton.timber:timber:4.7.1")
     implementation(project(":filelogprovider"))
 }

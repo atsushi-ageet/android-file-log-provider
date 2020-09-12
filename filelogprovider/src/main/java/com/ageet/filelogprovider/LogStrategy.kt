@@ -22,7 +22,7 @@ abstract class LogStrategy(val formatter: LogFormatter) {
                       formatter: LogFormatter,
                       internal val maxLogFileSize: Long = DEFAULT_MAX_LOG_FILE_SIZE,
                       internal val maxLogFileBackup: Int = DEFAULT_MAX_LOG_FILE_BACKUP,
-                      internal val logFileDir: File = getDefaultLogDir(context),
+                      internal val logFileDir: File = getDefaultLogDir(context)!!,
                       internal val logFileBaseName: String = DEFAULT_LOG_FILE_BASE_NAME,
                       internal val logFileExt: String = DEFAULT_LOG_FILE_EXT) : LogStrategy(formatter) {
 
