@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/android-file-log-provider.iml" filepath="$PROJECT_DIR$/android-file-log-provider.iml" group="android-file-log-provider" />
-      <module fileurl="file://$PROJECT_DIR$/demo/demo.iml" filepath="$PROJECT_DIR$/demo/demo.iml" group="android-file-log-provider/demo" />
-      <module fileurl="file://$PROJECT_DIR$/filelogprovider/filelogprovider.iml" filepath="$PROJECT_DIR$/filelogprovider/filelogprovider.iml" group="android-file-log-provider/filelogprovider" />
+      <module fileurl="file://$PROJECT_DIR$/android-file-log-provider.iml" filepath="$PROJECT_DIR$/android-file-log-provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/filelogprovider/android-file-log-provider.filelogprovider.iml" filepath="$PROJECT_DIR$/.idea/modules/filelogprovider/android-file-log-provider.filelogprovider.iml" />
     </modules>
   </component>
 </project>
