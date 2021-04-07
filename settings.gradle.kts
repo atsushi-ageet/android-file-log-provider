@@ -1,1 +1,1 @@
-include(":filelogprovider", ":demo")
+include(":provider", ":demo")
