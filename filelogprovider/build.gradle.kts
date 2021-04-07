@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.config.KotlinCompilerVersion
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("com.github.dcendents.android-maven") version "2.1"
 }
 
 android {
