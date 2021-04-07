@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     `maven-publish`
+    signing
 }
 
 android {
@@ -60,5 +61,8 @@ afterEvaluate {
                 }
             }
         }
+    }
+    signing {
+        sign(publishing.publications["release"])
     }
 }
