@@ -61,6 +61,19 @@ afterEvaluate {
                 }
             }
         }
+        repositories {
+            maven {
+                name = "sonatype"
+                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                logger.quiet("sonatype: $url")
+                credentials {
+                    username = project.properties["sonatype.user"].toString()
+                    password = project.properties["sonatype.password"].toString()
+                }
+            }
+        }
     }
     signing {
         sign(publishing.publications["release"])
