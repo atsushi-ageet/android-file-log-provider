@@ -1,4 +1,6 @@
 buildscript {
+    apply(from = "android-config.gradle")
+
     repositories {
         google()
         mavenCentral()

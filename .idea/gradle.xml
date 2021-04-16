@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/demo" />
             <option value="$PROJECT_DIR$/provider" />
+            <option value="$PROJECT_DIR$/provider-directboot" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

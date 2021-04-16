@@ -12,7 +12,7 @@ val commonMinSdkVersion: Int by project
 val commonTargetSdkVersion: Int by project
 
 android {
-    compileSdkVersion(commonTargetSdkVersion)
+    compileSdkVersion(commonCompileSdkVersion)
 
     defaultConfig {
         minSdkVersion(commonMinSdkVersion)
@@ -34,6 +34,7 @@ android {
 
 dependencies {
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
+    api(project(":provider"))
 }
 
 afterEvaluate {
@@ -42,8 +43,8 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 from(components["release"])
                 pom {
-                    name.set("File Log Provider")
-                    description.set("file log library for android")
+                    name.set("File Log Provider for Direct Boot")
+                    description.set("file log library for android(direct boot)")
                     url.set("https://github.com/atsushi-ageet/android-file-log-provider")
                     licenses {
                         license {

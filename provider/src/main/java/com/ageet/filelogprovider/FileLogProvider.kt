@@ -24,9 +24,11 @@ class FileLogProvider : ContentProvider() {
         ENABLE,
     }
 
-    private val sharedPreferences: SharedPreferences get() = context!!.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences get() = currentContext.getSharedPreferences("FileLogProvider", Context.MODE_PRIVATE)
     private lateinit var logStrategy: LogStrategy
     private var status: Status = Status.DISABLE
+    private val providerInfo: ProviderInfo by lazy { getProviderInfo(context!!) }
+    private val metaData: Bundle by lazy { providerInfo.metaData ?: Bundle.EMPTY }
 
     private fun getInternalFilesDir(context: Context, path: String) = File(context.filesDir, path).also { file ->
         if (!file.exists()) file.mkdirs()
@@ -50,9 +52,15 @@ class FileLogProvider : ContentProvider() {
         return formatterClass.getConstructor(Context::class.java).newInstance(context) as LogFormatter
     }
 
+    private val currentContext: Context by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && providerInfo.directBootAware) {
+            context!!.createDeviceProtectedStorageContext()
+        } else context!!
+    }
+
     override fun onCreate(): Boolean {
-        val context = context!!
-        val metaData = getMetaData(context)
+        val context = currentContext
+        val metaData = metaData
         val initialStatus = metaData.getString(MetaData.INITIAL_STATUS, Status.DISABLE.name)
         val maxLogFileSize = metaData[MetaData.MAX_LOG_FILE_SIZE_IN_MB]?.let { it as? Float }?.let { it * 1024 * 1024 }?.toLong() ?: LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_SIZE
         val maxLogFileBackup = metaData.getInt(MetaData.MAX_LOG_FILE_BACKUP, LogStrategy.RollingFile.DEFAULT_MAX_LOG_FILE_BACKUP)
@@ -141,7 +149,7 @@ class FileLogProvider : ContentProvider() {
                     Log.i(LOG_TAG, "Update status to $status")
                     this.status = Status.valueOf(status)
                     sharedPreferences.edit().putString(Column.STATUS, status).apply()
-                    val context = context!!
+                    val context = currentContext
                     context.contentResolver.notifyChange(Path.STATUS.getContentUri(context), null)
                 }
             }
@@ -176,7 +184,7 @@ class FileLogProvider : ContentProvider() {
         addURI(Path.FILES)
     }}
 
-    private fun UriMatcher.addURI(paths: Path) = addURI(getAuthority(context!!), paths.path, paths.code)
+    private fun UriMatcher.addURI(paths: Path) = addURI(getAuthority(currentContext), paths.path, paths.code)
 
     private enum class Path(val path: String, val code: Int) {
         STATUS("status", 1),
@@ -251,8 +259,6 @@ class FileLogProvider : ContentProvider() {
                 }
             }
         }
-
-        private fun getMetaData(context: Context): Bundle = getProviderInfo(context).metaData ?: Bundle()
 
         @JvmStatic
         fun isLoggerProcess(context: Context): Boolean = context.currentProcessName == getProviderInfo(context).processName

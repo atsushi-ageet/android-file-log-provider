@@ -1,0 +1,5 @@
+ext {
+    commonCompileSdkVersion = 30
+    commonMinSdkVersion = 16
+    commonTargetSdkVersion = 30
+}

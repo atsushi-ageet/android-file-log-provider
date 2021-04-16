@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/android-file-log-provider.iml" filepath="$PROJECT_DIR$/android-file-log-provider.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.iml" filepath="$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.iml" filepath="$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.iml" />
     </modules>
   </component>
 </project>
