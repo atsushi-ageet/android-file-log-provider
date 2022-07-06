@@ -12,11 +12,12 @@ val commonMinSdkVersion: Int by project
 val commonTargetSdkVersion: Int by project
 
 android {
-    compileSdkVersion(commonCompileSdkVersion)
+    namespace = "com.ageet.filelogprovider.directboot"
+    compileSdk = commonCompileSdkVersion
 
     defaultConfig {
-        minSdkVersion(commonMinSdkVersion)
-        targetSdkVersion(commonTargetSdkVersion)
+        minSdk = commonMinSdkVersion
+        targetSdk = commonTargetSdkVersion
 
         consumerProguardFiles("consumer-rules.pro")
     }

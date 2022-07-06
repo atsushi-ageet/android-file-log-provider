@@ -1,5 +1,5 @@
 ext {
-    commonCompileSdkVersion = 30
+    commonCompileSdkVersion = 32
     commonMinSdkVersion = 16
-    commonTargetSdkVersion = 30
+    commonTargetSdkVersion = 32
 }

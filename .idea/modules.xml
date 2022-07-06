@@ -4,8 +4,17 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/android-file-log-provider.iml" filepath="$PROJECT_DIR$/android-file-log-provider.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/demo/android-file-log-provider.demo.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.iml" filepath="$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.iml" filepath="$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.main.iml" filepath="$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/provider-directboot/android-file-log-provider.provider-directboot.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.main.iml" filepath="$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/provider/android-file-log-provider.provider.unitTest.iml" />
     </modules>
   </component>
 </project>

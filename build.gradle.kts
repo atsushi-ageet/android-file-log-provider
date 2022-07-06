@@ -1,24 +1,11 @@
 buildscript {
     apply(from = "android-config.gradle")
-
-    repositories {
-        google()
-        mavenCentral()
-        jcenter().mavenContent {
-            includeGroup("org.jetbrains.trove4j")
-        }
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:4.1.3")
-        classpath(kotlin("gradle-plugin", version = "1.4.32"))
-    }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+plugins {
+    id("com.android.application") version "7.2.1" apply false
+    id("com.android.library") version "7.2.1" apply false
+    id("org.jetbrains.kotlin.android") version "1.6.21" apply false
 }
 
 tasks.register("clean", Delete::class) {
