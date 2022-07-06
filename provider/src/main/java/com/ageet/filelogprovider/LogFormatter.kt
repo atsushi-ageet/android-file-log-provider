@@ -29,17 +29,17 @@ abstract class  LogFormatter(val context: Context) {
         override fun format(record: LogRecord): String {
             val dateText = formatDate(record.date)
             val priorityText = formatPriority(record.priority)
-            return record.message.split('\n').joinToString(separator = "\n") { line ->
-                formatLine(priorityText, record.tag, line, record.pid, record.tid, dateText)
-            }
+            return record.message.lineSequence().joinToString(prefix = formatPrefix(priorityText, record.tag, record.pid, record.tid, dateText), separator = lineSeparator)
         }
+
+        open val lineSeparator: String = "\n    "
 
         override fun format(records: List<LogRecord>): String {
             return records.joinToString(separator = "\n") { format(it) }
         }
 
-        open fun formatLine(priorityText: String, tag: String, line: String, pid: Int, tid: Int, dateText: String): String {
-            return "$dateText $pid-$tid $priorityText/$tag: $line"
+        open fun formatPrefix(priorityText: String, tag: String, pid: Int, tid: Int, dateText: String): String {
+            return "$dateText $pid-$tid $priorityText/$tag: "
         }
 
         open fun formatDate(date: Date): String = DATE_FORMAT.format(date)
