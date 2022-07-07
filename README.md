@@ -1,3 +1,3 @@
-[![](https://jitpack.io/v/atsushi-ageet/android-file-log-provider.svg)](https://jitpack.io/#atsushi-ageet/android-file-log-provider)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ageet.filelogprovider/provider/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ageet.filelogprovider/provider)
 
 # FileLogProvider
